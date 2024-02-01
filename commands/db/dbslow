@@ -1,0 +1,62 @@
+#!/bin/bash
+
+## #ddev-generated
+## Description: Turn on query logging for diagnostic purposes.
+## Usage: dbslow on|off|view|tail
+## Example: "ddev dblog on" or "ddev dblog off" or "ddev dblog view" or "ddev dblog tail"
+## DBTypes: mysql,mariadb
+## ExecRaw: true
+
+LOGFILE=/var/log/db-slow.log
+
+function turn_on() {
+mysql -u root -proot <<EOX
+SET GLOBAL slow_query_log = 'ON';
+SET GLOBAL slow_query_log_file = '$LOGFILE';
+SET GLOBAL long_query_time = 1;
+EOX
+
+echo "'slows query' logging started: $LOGFILE"
+}
+
+function turn_off() {
+  mysql -u root -proot -e "SET global slow_query_log = 'OFF'"
+}
+
+function ctrl_c() {
+  if [ "$previous_state" = "OFF" ]; then
+    echo "Turning off slow logging..."
+    mysql -u root -proot -e "SET global slow_query_log = 'OFF'"
+  fi
+
+  exit 0
+}
+
+case "$@" in
+  on)
+    state=1
+    ;;
+  off)
+    echo 'Disabling slow query logging...'
+    turn_off
+    exit 0
+    ;;
+  view)
+    cat $LOGFILE
+    exit 0
+    ;;
+  tail)
+    state=1
+    previous_state=$(mysql -u root -proot -e "SHOW VARIABLES LIKE 'slow_query_log'\G;" | awk '/Value:/ { print $2 }')
+    trap ctrl_c INT
+    ;;
+  *)
+    echo "Usage: " $(basename $0) " on|off|view|tail"
+    exit 1
+    ;;
+esac
+
+turn_on
+if [ "$@" = "tail" ]; then
+  tail -f $LOGFILE
+fi

@@ -1,0 +1,4 @@
+name: dbslow
+
+project_files:
+- commands/db/dbslow
