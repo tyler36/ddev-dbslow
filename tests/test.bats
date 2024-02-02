@@ -27,7 +27,10 @@ health_checks_mysql() {
   echo "# Check log can be turned off."
   ddev dbslow off
   ddev mysql -e "SELECT 'START'; DO SLEEP(4); SELECT 'END';"
-  ddev dbslow view | grep -v "DO SLEEP(4)"
+  if [[ $(ddev dbslow view) =~ "SLEEP(4)" ]]; then
+    echo "Logging is still enabled."
+    exit 1;
+  fi
 }
 
 @test "install from directory" {
