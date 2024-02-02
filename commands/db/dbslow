@@ -10,7 +10,10 @@
 LOGFILE=/var/log/db-slow.log
 
 function turn_on() {
-mysql -u root -proot <<EOX
+# mysql -u root -proot -e "SET GLOBAL slow_query_log = 'ON';" 2>/dev/null
+# mysql -u root -proot -e "SET GLOBAL slow_query_log_file = '$LOGFILE';" 2>/dev/null
+# mysql -u root -proot -e "SET GLOBAL long_query_time = 1;" 2>/dev/null
+mysql -u root -proot <<EOX 2>/dev/null
 SET GLOBAL slow_query_log = 'ON';
 SET GLOBAL slow_query_log_file = '$LOGFILE';
 SET GLOBAL long_query_time = 1;
@@ -20,14 +23,14 @@ EOX
 }
 
 function turn_off() {
-  mysql -u root -proot -e "SET global slow_query_log = 'OFF'"
+  mysql -u root -proot -e "SET global slow_query_log = 'OFF'" 2>/dev/null
   echo_state
   exit 0;
 }
 
 function get_state() {
-  export DB_SLOW_LOGGING_STATUS=$(mysql -u root -proot -e "SHOW VARIABLES LIKE 'slow_query_log'\G;" | awk '/Value:/ { print $2 }')
-  export DB_LOGFILE=$(mysql -u root -proot -e "SHOW VARIABLES LIKE 'slow_query_log_file'\G;" | awk '/Value:/ { print $2 }')
+  export DB_SLOW_LOGGING_STATUS=$(mysql -u root -proot -e "SHOW VARIABLES LIKE 'slow_query_log'\G;" 2>/dev/null | awk '/Value:/ { print $2 }')
+  export DB_LOGFILE=$(mysql -u root -proot -e "SHOW VARIABLES LIKE 'slow_query_log_file'\G;" 2>/dev/null | awk '/Value:/ { print $2 }')
 }
 
 function echo_state() {
