@@ -2,7 +2,7 @@
 
 ## #ddev-generated
 ## Description: Turn on query logging for diagnostic purposes.
-## Usage: dbslow on|off|view|tail
+## Usage: dbslow on|off|toggle|view|tail
 ## Example: "ddev dblog on" or "ddev dblog off" or "ddev dblog view" or "ddev dblog tail"
 ## DBTypes: mysql,mariadb
 ## ExecRaw: true
@@ -73,7 +73,7 @@ case "$@" in
     trap ctrl_c INT
     ;;
   *)
-    echo "Usage: " $(basename $0) " on|off|view|tail"
+    echo "Usage: " $(basename $0) " on|off|toggle|view|tail"
     exit 1
     ;;
 esac
