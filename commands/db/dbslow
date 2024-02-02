@@ -16,11 +16,22 @@ SET GLOBAL slow_query_log_file = '$LOGFILE';
 SET GLOBAL long_query_time = 1;
 EOX
 
-echo "'slows query' logging started: $LOGFILE"
+  echo_state
 }
 
 function turn_off() {
   mysql -u root -proot -e "SET global slow_query_log = 'OFF'"
+  echo_state
+}
+
+function get_state() {
+  export DB_SLOW_LOGGING_STATUS=$(mysql -u root -proot -e "SHOW VARIABLES LIKE 'slow_query_log'\G;" | awk '/Value:/ { print $2 }')
+}
+
+function echo_state() {
+  get_state
+
+  echo "'slow query' logging is: $DB_SLOW_LOGGING_STATUS"
 }
 
 function ctrl_c() {
@@ -32,14 +43,20 @@ function ctrl_c() {
   exit 0
 }
 
+get_state
+
 case "$@" in
   on)
-    state=1
     ;;
   off)
-    echo 'Disabling slow query logging...'
     turn_off
     exit 0
+    ;;
+  toggle)
+    get_state
+    if [ "$DB_SLOW_LOGGING_STATUS" = "ON" ]; then
+      turn_off
+    fi
     ;;
   view)
     cat $LOGFILE
