@@ -43,11 +43,11 @@ health_checks_mysql() {
   health_checks_mysql
 }
 
-# @test "install from release" {
-#   set -eu -o pipefail
-#   cd ${TESTDIR} || ( printf "unable to cd to ${TESTDIR}\n" && exit 1 )
-#   echo "# ddev get tyler36/ddev-dbslow with project ${PROJNAME} in ${TESTDIR} ($(pwd))" >&3
-#   ddev get tyler36/ddev-dbslow
-#   ddev restart >/dev/null
-#   health_checks_mysql
-# }
+@test "install from release" {
+  set -eu -o pipefail
+  cd ${TESTDIR} || ( printf "unable to cd to ${TESTDIR}\n" && exit 1 )
+  echo "# ddev get tyler36/ddev-dbslow with project ${PROJNAME} in ${TESTDIR} ($(pwd))" >&3
+  ddev get tyler36/ddev-dbslow
+  ddev restart >/dev/null
+  health_checks_mysql
+}
