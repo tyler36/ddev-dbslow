@@ -27,7 +27,10 @@ health_checks_mysql() {
   echo "# Check log can be turned off."
   ddev dbslow off
   ddev mysql -e "SELECT 'START'; DO SLEEP(4); SELECT 'END';"
-  ddev dbslow view | grep -v "DO SLEEP(4)"
+  if [[ $(ddev dbslow view) =~ "SLEEP(4)" ]]; then
+    echo "Logging is still enabled."
+    exit 1;
+  fi
 }
 
 @test "install from directory" {
@@ -40,11 +43,11 @@ health_checks_mysql() {
   health_checks_mysql
 }
 
-# @test "install from release" {
-#   set -eu -o pipefail
-#   cd ${TESTDIR} || ( printf "unable to cd to ${TESTDIR}\n" && exit 1 )
-#   echo "# ddev get tyler36/ddev-dbslow with project ${PROJNAME} in ${TESTDIR} ($(pwd))" >&3
-#   ddev get tyler36/ddev-dbslow
-#   ddev restart >/dev/null
-#   health_checks_mysql
-# }
+@test "install from release" {
+  set -eu -o pipefail
+  cd ${TESTDIR} || ( printf "unable to cd to ${TESTDIR}\n" && exit 1 )
+  echo "# ddev get tyler36/ddev-dbslow with project ${PROJNAME} in ${TESTDIR} ($(pwd))" >&3
+  ddev get tyler36/ddev-dbslow
+  ddev restart >/dev/null
+  health_checks_mysql
+}
