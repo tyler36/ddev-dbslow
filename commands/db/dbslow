@@ -37,15 +37,13 @@ function echo_state() {
 }
 
 function ctrl_c() {
-  if [ "$previous_state" = "OFF" ]; then
+  if [ "$DB_SLOW_LOGGING_STATUS" = "OFF" ]; then
     echo "Turning off slow logging..."
-    mysql -u root -proot -e "SET global slow_query_log = 'OFF'"
+    turn_off
   fi
 
   exit 0
 }
-
-get_state
 
 case "$@" in
   on)
@@ -68,8 +66,9 @@ case "$@" in
     exit 0
     ;;
   tail)
-    state=1
-    previous_state=$(mysql -u root -proot -e "SHOW VARIABLES LIKE 'slow_query_log'\G;" | awk '/Value:/ { print $2 }')
+    # Grab the current state so if it's OFF, we'll turn it back off when tail exits.
+    get_state
+
     trap ctrl_c INT
     ;;
   *)
