@@ -2,7 +2,7 @@
 
 ## #ddev-generated
 ## Description: Turn on query logging for diagnostic purposes.
-## Usage: dbslow on|off|view|tail
+## Usage: dbslow on|off|toggle|view|tail
 ## Example: "ddev dblog on" or "ddev dblog off" or "ddev dblog view" or "ddev dblog tail"
 ## DBTypes: mysql,mariadb
 ## ExecRaw: true
@@ -16,11 +16,24 @@ SET GLOBAL slow_query_log_file = '$LOGFILE';
 SET GLOBAL long_query_time = 1;
 EOX
 
-echo "'slows query' logging started: $LOGFILE"
+  echo_state
 }
 
 function turn_off() {
   mysql -u root -proot -e "SET global slow_query_log = 'OFF'"
+  echo_state
+  exit 0;
+}
+
+function get_state() {
+  export DB_SLOW_LOGGING_STATUS=$(mysql -u root -proot -e "SHOW VARIABLES LIKE 'slow_query_log'\G;" | awk '/Value:/ { print $2 }')
+  export DB_LOGFILE=$(mysql -u root -proot -e "SHOW VARIABLES LIKE 'slow_query_log_file'\G;" | awk '/Value:/ { print $2 }')
+}
+
+function echo_state() {
+  get_state
+
+  echo "'slow query' logging is: $DB_SLOW_LOGGING_STATUS"
 }
 
 function ctrl_c() {
@@ -32,14 +45,23 @@ function ctrl_c() {
   exit 0
 }
 
+get_state
+
 case "$@" in
   on)
-    state=1
     ;;
   off)
-    echo 'Disabling slow query logging...'
     turn_off
     exit 0
+    ;;
+  toggle)
+    get_state
+
+    # Check if state is ON and it's set our logfile.
+    # It may be enabled by default, so it's not good enough to simple check state.
+    if [ "$DB_SLOW_LOGGING_STATUS" = "ON" ] && [ "$DB_LOGFILE" = "$LOGFILE" ]; then
+      turn_off
+    fi
     ;;
   view)
     cat $LOGFILE
@@ -51,7 +73,7 @@ case "$@" in
     trap ctrl_c INT
     ;;
   *)
-    echo "Usage: " $(basename $0) " on|off|view|tail"
+    echo "Usage: " $(basename $0) " on|off|toggle|view|tail"
     exit 1
     ;;
 esac

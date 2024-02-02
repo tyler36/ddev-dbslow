@@ -15,7 +15,7 @@ teardown() {
   set -eu -o pipefail
   cd ${TESTDIR} || ( printf "unable to cd to ${TESTDIR}\n" && exit 1 )
   ddev delete -Oy ${PROJNAME} >/dev/null 2>&1
-  # [ "${TESTDIR}" != "" ] && rm -rf ${TESTDIR}
+  [ "${TESTDIR}" != "" ] && rm -rf ${TESTDIR}
 }
 
 health_checks_mysql() {
@@ -50,4 +50,26 @@ health_checks_mysql() {
   ddev get tyler36/ddev-dbslow
   ddev restart >/dev/null
   health_checks_mysql
+}
+
+@test "'toggle' command functions" {
+  set -eu -o pipefail
+  cd ${TESTDIR}
+  echo "# ddev get ${DIR} with project ${PROJNAME} in ${TESTDIR} ($(pwd))" >&3
+  ddev get ${DIR}
+  ddev restart
+
+  echo "# Check logging can be turned on."
+  ddev dbslow toggle | grep ON
+  ddev mysql -e "SELECT 'START'; DO SLEEP(2); SELECT 'END';"
+  ddev dbslow view | grep "DO SLEEP(2)"
+
+  echo "# Check log can be turned off."
+  ddev dbslow toggle | grep OFF
+  ddev mysql -e "SELECT 'START'; DO SLEEP(4); SELECT 'END';"
+  ddev dbslow view | grep -v "DO SLEEP(4)"
+  if [[ $(ddev dbslow view) =~ "SLEEP(4)" ]]; then
+    echo "Logging is still enabled."
+    exit 1;
+  fi
 }
