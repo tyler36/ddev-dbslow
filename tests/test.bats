@@ -15,7 +15,7 @@ teardown() {
   set -eu -o pipefail
   cd ${TESTDIR} || ( printf "unable to cd to ${TESTDIR}\n" && exit 1 )
   ddev delete -Oy ${PROJNAME} >/dev/null 2>&1
-  # [ "${TESTDIR}" != "" ] && rm -rf ${TESTDIR}
+  [ "${TESTDIR}" != "" ] && rm -rf ${TESTDIR}
 }
 
 health_checks_mysql() {
@@ -68,4 +68,8 @@ health_checks_mysql() {
   ddev dbslow toggle | grep OFF
   ddev mysql -e "SELECT 'START'; DO SLEEP(4); SELECT 'END';"
   ddev dbslow view | grep -v "DO SLEEP(4)"
+  if [[ $(ddev dbslow view) =~ "SLEEP(4)" ]]; then
+    echo "Logging is still enabled."
+    exit 1;
+  fi
 }

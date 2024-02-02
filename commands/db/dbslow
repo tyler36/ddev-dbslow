@@ -22,10 +22,12 @@ EOX
 function turn_off() {
   mysql -u root -proot -e "SET global slow_query_log = 'OFF'"
   echo_state
+  exit 0;
 }
 
 function get_state() {
   export DB_SLOW_LOGGING_STATUS=$(mysql -u root -proot -e "SHOW VARIABLES LIKE 'slow_query_log'\G;" | awk '/Value:/ { print $2 }')
+  export DB_LOGFILE=$(mysql -u root -proot -e "SHOW VARIABLES LIKE 'slow_query_log_file'\G;" | awk '/Value:/ { print $2 }')
 }
 
 function echo_state() {
@@ -54,7 +56,10 @@ case "$@" in
     ;;
   toggle)
     get_state
-    if [ "$DB_SLOW_LOGGING_STATUS" = "ON" ]; then
+
+    # Check if state is ON and it's set our logfile.
+    # It may be enabled by default, so it's not good enough to simple check state.
+    if [ "$DB_SLOW_LOGGING_STATUS" = "ON" ] && [ "$DB_LOGFILE" = "$LOGFILE" ]; then
       turn_off
     fi
     ;;
