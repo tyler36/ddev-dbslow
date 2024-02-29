@@ -39,8 +39,8 @@ As both addons mature, it is possible this functionality will merge into `ddev-d
 
 ## Starting and stopping
 
-- `ddev dbslow start`: Start logging slow queries.
-- `ddev dbslow stop`: Stop logging slow queries.
+- `ddev dbslow on`: Start logging slow queries.
+- `ddev dbslow off`: Stop logging slow queries.
 - `ddev dbslow toggle`: Toggle the current state of the logging. Ie. OFF => ON, ON => OFF.
 
 ## Viewing
