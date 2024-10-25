@@ -25,6 +25,14 @@ As both addons mature, it is possible this functionality will merge into `ddev-d
 
 1. Install the addon.
 
+    For DDEV v1.23.5 or above run
+
+    ```shell
+    ddev add-on get tyler36/dbslow
+    ```
+
+    For earlier versions of DDEV run
+
     ```shell
     ddev get tyler36/dbslow
     ```
