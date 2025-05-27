@@ -2,3 +2,5 @@ name: dbslow
 
 project_files:
 - commands/db/dbslow
+
+ddev_version_constraint: '>= v1.24.3'
